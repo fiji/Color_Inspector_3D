@@ -25,6 +25,11 @@
 		</dependency>
 	</dependencies>
 
+	<ciManagement>
+		<system>Jenkins</system>
+		<url>http://jenkins.imagej.net/job/Color_Inspector_3D/</url>
+	</ciManagement>
+
 	<scm>
 		<connection>scm:git:git://github.com/fiji/Color_Inspector_3D</connection>
 		<developerConnection>scm:git:git@github.com:fiji/Color_Inspector_3D</developerConnection>
