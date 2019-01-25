@@ -15,7 +15,7 @@
 
 	<name>Color Inspector 3D</name>
 	<description>Color Inspector 3D plugin for Fiji.</description>
-	<url>http://imagej.net/Color_Inspector_3D</url>
+	<url>https://imagej.net/Color_Inspector_3D</url>
 	<inceptionYear>2004</inceptionYear>
 	<organization>
 		<name>Fiji</name>
@@ -33,7 +33,7 @@
 		<developer>
 			<id>ctrueden</id>
 			<name>Curtis Rueden</name>
-			<url>http://imagej.net/User:Rueden</url>
+			<url>https://imagej.net/User:Rueden</url>
 			<roles>
 				<role>maintainer</role>
 			</roles>
@@ -42,18 +42,18 @@
 	<contributors>
 		<contributor>
 			<name>Kai Uwe Barthel</name>
-			<url>http://imagej.net/User:Kai</url>
+			<url>https://imagej.net/User:Kai</url>
 			<roles><role>founder</role></roles>
 			<properties><id>kaibarthel</id></properties>
 		</contributor>
 		<contributor>
 			<name>Johannes Schindelin</name>
-			<url>http://imagej.net/User:Schindelin</url>
+			<url>https://imagej.net/User:Schindelin</url>
 			<properties><id>dscho</id></properties>
 		</contributor>
 		<contributor>
 			<name>Mark Hiner</name>
-			<url>http://imagej.net/User:Hinerm</url>
+			<url>https://imagej.net/User:Hinerm</url>
 			<properties><id>hinerm</id></properties>
 		</contributor>
 	</contributors>
@@ -91,7 +91,7 @@
 	<repositories>
 		<repository>
 			<id>imagej.public</id>
-			<url>http://maven.imagej.net/content/groups/public</url>
+			<url>https://maven.imagej.net/content/groups/public</url>
 		</repository>
 	</repositories>
 
