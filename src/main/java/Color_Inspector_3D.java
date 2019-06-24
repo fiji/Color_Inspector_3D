@@ -143,26 +143,27 @@ import javax.swing.event.ChangeListener;
 
 public final class Color_Inspector_3D implements PlugIn {
 
-	private final static String version = "v2.3"; 
+	private final static String version = "v2.4"; 
 	public static final char degreeSymbol = (char)176;
 
 	final static int RGB = 0;
 	final static int YUV = 1;
 	final static int YCBCR = 2;
 	final static int YIQ = 3;
-	final static int HSB = 4;
-	final static int HSV = 5;
-	final static int HSL = 6;
-	final static int HMMD = 7;
-	final static int LAB = 8;
-	final static int LUV = 9;
-	final static int XYY = 10;
-	final static int XYZ = 11;
-	final static int KLT = 12;
-	final static int HCL = 13;
+	final static int YCGCO = 4;
+	final static int HSB = 5;
+	final static int HSV = 6;
+	final static int HSL = 7;
+	final static int HMMD = 8;
+	final static int LAB = 9;
+	final static int LUV = 10;
+	final static int XYY = 11;
+	final static int XYZ = 12;
+	final static int KLT = 13;
+	final static int HCL = 14;
 
-	private final static String [] stringColorSpaceNames = { "RGB", "YUV", "YCbCr", "YIQ", "HSB", "HSV", "HSL", "HMMD", "Lab", "Luv", "xyY", "XYZ", "KLT/PCA"} ;
-	private final static String [][] stringColorSpaceLetters = { {"R","G","B"}, {"Y","U","V"}, {"Y","Cb","Cr"}, {"Y","I","Q"}, {"H","S","B"}, {"H","S","V"}, 
+	private final static String [] stringColorSpaceNames = { "RGB", "YUV", "YCbCr", "YIQ", "YCgCo", "HSB", "HSV", "HSL", "HMMD", "Lab", "Luv", "xyY", "XYZ", "KLT/PCA"} ;
+	private final static String [][] stringColorSpaceLetters = { {"R","G","B"}, {"Y","U","V"}, {"Y","Cb","Cr"}, {"Y","I","Q"}, {"Y","Cg","Co"}, {"H","S","B"}, {"H","S","V"}, 
 		{"H","S","L"}, {"Hue", "Diff", "Sum"},{"L","a","b"}, {"L","u","v"}, {"x","y","Y"}, {"X","Y","Z"}, {"C0","C1","C2"} } ;
 
 	private boolean english = true;
@@ -291,7 +292,7 @@ public final class Color_Inspector_3D implements PlugIn {
 		stringDisplayMode[4] = stringWu;
 
 		ImagePlus imp = WindowManager.getCurrentImage();
-
+		
 		if (imp==null) {
 			String str = "/images/titel.jpg";
 			URL url = null;
@@ -308,7 +309,21 @@ public final class Color_Inspector_3D implements PlugIn {
 				IJ.showMessage("Color Inspector 3D", msg + "\n \n" + url);
 			}	
 		}
+		else {
+			ImageProcessor ip = imp.getProcessor();
 
+			int height = ip.getHeight();
+			int width = ip.getWidth();
+			int maxSize = Math.max(width, height);
+
+			if (maxSize > 1024 ) {
+				int targetWidth = width*1024/maxSize;
+				int targetHeight = height*1024/maxSize;
+				ip = ip.resize(targetWidth,targetHeight);
+				String name = "scaled version of " + imp.getTitle();
+				imp = new ImagePlus(name, ip);
+			}
+		}
 		cw = new CustomWindow();
 		cw.init(imp);
 
@@ -647,31 +662,20 @@ public final class Color_Inspector_3D implements PlugIn {
 					else if (string.equals(stringManual)) {
 
 						try {
-							String url = (english) ? "http://www.f4.fhtw-berlin.de/~barthel/ImageJ/ColorInspector/help.htm" :
-								"http://www.f4.fhtw-berlin.de/~barthel/ImageJ/ColorInspector/hilfe.htm";
+							String url = (english) ? "http://home.htw-berlin.de/~barthel/ImageJ/ColorInspector/help.htm" :
+								"http://home.htw-berlin.de/~barthel/ImageJ/ColorInspector/hilfe.htm";
 							BrowserLauncher.openURL(url);
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
 
 					}
-
-					else if (string.equals("Info")) {
-						URL url = null;
+					else if (string.equals("Website")) {
 						try {
-							url = getClass().getResource("/images/info.jpg");
-							if (url != null) {
-								Image image = Toolkit.getDefaultToolkit().getImage(url);            
-								// display the image
-								ImagePlus imp = new ImagePlus("/images/info.jpg", image);
-								imp.show();
-							}
-						}
-						catch (Exception e) {
-							String msg = e.getMessage();
-							if (msg==null || msg.equals(""))
-								msg = "" + e;	
-							IJ.showMessage("Color Inspector 3D", msg + "\n \n" + url);
+							String url = "https://www.visual-computing.com";
+							BrowserLauncher.openURL(url);
+						} catch (IOException e) {
+							e.printStackTrace();
 						}
 					}
 				}	
@@ -770,7 +774,7 @@ public final class Color_Inspector_3D implements PlugIn {
 			item.addActionListener(menuListener);
 			helpMenu.add(item);
 
-			item = new JMenuItem("Info");
+			item = new JMenuItem("Website");
 			item.addActionListener(menuListener);
 			helpMenu.add(item);
 
@@ -802,7 +806,6 @@ public final class Color_Inspector_3D implements PlugIn {
 
 		private JPanel imagePanel, displayPanel;
 		private JScrollPane scrollPanel;
-
 
 		private JComboBox displayChoice; 
 		private JComboBox colorSpaceChoice; 
@@ -1108,7 +1111,6 @@ public final class Color_Inspector_3D implements PlugIn {
 			add(sliderPanel);
 			validate();
 		
-
 			imageRegion2.newText(7);  
 			imageRegion2.newLines(30*2 + 2); 
 			pic2.initTextsAndDrawColors();
@@ -1336,9 +1338,9 @@ public final class Color_Inspector_3D implements PlugIn {
 		}
 
 		synchronized public void actionPerformed(ActionEvent e) {
-			String stringWeight = (english) ? " Weight" : " Gewichtung";
-			String stringCells = (english) ? " Number of Color Cells" : " Anzahl Farbzellen";
-			String stringNumColors = (english) ? " Number of Colors" : " Farbanzahl ";
+			String stringWeight = (english) ? " Weight:" : " Gewichtung:";
+			String stringCells = (english) ? " # Color Cells:" : "Farbzellen:";
+			String stringNumColors = (english) ? " # Colors:" : " Farbanzahl:";
 
 			JComboBox cb = (JComboBox)e.getSource();
 			if (cb == displayChoice) {
@@ -1774,6 +1776,7 @@ public final class Color_Inspector_3D implements PlugIn {
 	///////////////////////////////////////////////////////////////////////////
 
 	class ImageRegion extends JPanel { 
+		private static final long serialVersionUID = 1L;
 		private Image image;
 		private Image imageOverlay;
 
@@ -1923,9 +1926,8 @@ public final class Color_Inspector_3D implements PlugIn {
 					g.drawImage(imageOverlay, xstart, ystart, (int)(scale*width), (int)(scale*height), this);
 				}
 			}
-
 			
-			if (lines != null  && showAxes == true)
+			if (lines != null && showAxes == true)
 				for (int i=0; i<lines.length; i++) {
 					if (lines[i] != null)  {
 						float x1 = lines[i].x1;
@@ -1953,9 +1955,8 @@ public final class Color_Inspector_3D implements PlugIn {
 							for (int j = 0; j < length; j++) {
 								int pos = (int)y*width+(int)x;
 								if (pos >= 0 && pos < pixelsZ.length)
-									if (z <= pixelsZ[pos] ) {
+									if (z <= pixelsZ[pos] ) 
 										g.drawLine((int)x, (int)y, (int)(x+dx), (int)(y+dy));
-									}
 								x+=dx;
 								y+=dy;
 								z+=dz;
@@ -2128,6 +2129,7 @@ public final class Color_Inspector_3D implements PlugIn {
 		};
 		private final int [][] textPosYIQ = textPosYUV; 
 		private final int [][] textPosYCbCr = textPosYUV; 
+		private final int [][] textPosYCgCo = textPosYUV; 
 		private final int [][] textPosHSB = { 
 				{       0,       0, -128-dm},  // 0
 				{       0, 127+2*dp, 127+dp},  // H 
@@ -2161,6 +2163,7 @@ public final class Color_Inspector_3D implements PlugIn {
 				textPosYUV,
 				textPosYCbCr,
 				textPosYIQ,
+				textPosYCgCo,
 				textPosHSB,
 				textPosHSV,
 				textPosHSL,
@@ -2177,6 +2180,7 @@ public final class Color_Inspector_3D implements PlugIn {
 				{"0", "U", "V", "Y"},
 				{"0", "Cb","Cr","Y"},
 				{"0", "I", "Q", "Y"},
+				{"0", "Cg","Co","Y"},
 				{"0", "H", "S", "B"},
 				{"0", "H", "S", "V"},
 				{"0", "H", "S", "L"},
@@ -2529,6 +2533,44 @@ public final class Color_Inspector_3D implements PlugIn {
 			B = rgb[2];
 			xyzPos();
 		}
+		
+		
+		
+		
+		private void rgb2ycgco(int r, int g, int b, int[] ycgco) {
+			int rgb [] = {r, g, b};
+			rgb2ycgco(rgb, ycgco);
+		}
+		private void rgb2ycgco(int[] rgb, ColHash cv) {
+			rgb2ycgco(rgb, vec);
+			cv.R = vec[0];
+			cv.G = vec[1];
+			cv.B = vec[2];
+		}
+
+		private void rgb2ycgco(int[] rgb, int[] ycgco) {
+			int r = rgb[0];
+			int g = rgb[1];
+			int b = rgb[2];
+			ycgco[2] = ( r + 2*g + b) / 4; // Y
+			ycgco[0] = (-r + 2*g - b) / 4;
+			ycgco[1] = ( r       - b) / 2;
+		}
+
+		private void ycgco2rgb(int[] ycgco, int[] rgb) {
+			int c0 = ycgco[2]; 
+			int c1 = ycgco[0];
+			int c2 = ycgco[1];
+
+			int tmp = c0 - c1;
+			rgb[0] = (int) (tmp  + c2);
+			rgb[1] = (int) (c0   + c1);
+			rgb[2] = (int) (tmp  - c2);
+		}
+
+		
+		
+		
 
 		private void rgb2ycbcr(int r, int g, int b, int[] yuv) {
 			int rgb [] = {r, g, b};
@@ -3721,6 +3763,10 @@ public final class Color_Inspector_3D implements PlugIn {
 						rgb2ycbcr(rgb, cv); 
 						cv.B -= 128;
 						break;
+					case YCGCO:  
+						rgb2ycgco(rgb, cv); 
+						cv.B -= 128;
+						break;
 					case YIQ:  
 						rgb2yiq(rgb, cv); 
 						cv.B -= 128;
@@ -3815,6 +3861,11 @@ public final class Color_Inspector_3D implements PlugIn {
 						vec[0] += 128;
 						vec[1] += 128;
 						break;
+					case YCGCO:  
+						rgb2ycgco(rgb, vec); 
+						vec[0] += 128;
+						vec[1] += 128;
+						break;
 					case YIQ:  
 						rgb2yiq(rgb, vec); 
 						vec[0] += 128;
@@ -3897,6 +3948,9 @@ public final class Color_Inspector_3D implements PlugIn {
 			case YCBCR:  
 				rgb2ycbcr(rgb, cv); 
 				break;
+			case YCGCO:  
+				rgb2ycgco(rgb, cv); 
+				break;
 			case YIQ:  
 				rgb2yiq(rgb, cv); 
 				break;
@@ -3973,6 +4027,11 @@ public final class Color_Inspector_3D implements PlugIn {
 						vec[0] -= 128;
 						vec[1] -= 128;
 						ycbcr2rgb(vec, rgb); 
+						break;
+					case YCGCO:  
+						vec[0] -= 128;
+						vec[1] -= 128;
+						ycgco2rgb(vec, rgb); 
 						break;
 					case YIQ:  
 						vec[0] -= 128;
@@ -4055,13 +4114,18 @@ public final class Color_Inspector_3D implements PlugIn {
 				vec[1] *= channelFactor[2];
 				vec[2] *= channelFactor[0];
 				klt2rgb(vec, rgb);
-
 				break;
 			case YCBCR:
 				vec[0] *= channelFactor[1];
 				vec[1] *= channelFactor[2];
 				vec[2] =  (int) ((vec[2]-128)*channelFactor[0]+128);
 				ycbcr2rgb(vec, rgb); 
+				break;
+			case YCGCO:
+				vec[0] *= channelFactor[1];
+				vec[1] *= channelFactor[2];
+				vec[2] =  (int) ((vec[2]-128)*channelFactor[0]+128);
+				ycgco2rgb(vec, rgb); 
 				break;
 			case YIQ:
 				vec[0] *= channelFactor[1];
@@ -4233,7 +4297,6 @@ public final class Color_Inspector_3D implements PlugIn {
 			selectChannels();
 			if (numberOfColorsOrig > 256 ) { // do not do any quantization for palletized images
 
-
 				// convert RGB colors to display color space
 				int [] pixelsTmp = new int [width*height];
 				int cs = colorSpace;
@@ -4303,39 +4366,39 @@ public final class Color_Inspector_3D implements PlugIn {
 			imageRegion.setImage(image);
 		}
 
-		synchronized void selectChannelsOrig() {
-
-			if (channelFactor[0] == 1 && channelFactor[1] == 1 && channelFactor[2] == 1)
-				return;
-			
-			int[] vec = new int[3];
-			int[] rgb = new int[3];
-
-
-			for (int i=0; i<pixels.length; i++){
-				int c = pixels[i];
-
-				if ( (c & OPAQUE) == OPAQUE) {
-
-					convertColor(c,vec);
-
-					convertColorBack(vec,rgb);
-
-					int r = rgb[0];
-					int g = rgb[1];
-					int b = rgb[2];
-					r = (r>255) ? 255 : ((r < 0) ? 0 : r); 
-					g = (g>255) ? 255 : ((g < 0) ? 0 : g); 
-					b = (b>255) ? 255 : ((b < 0) ? 0 : b); 
-
-					c = (0xFF<<24) | (r <<16) | (g<<8) | b;
-
-					pixels[i] = c;
-				}
-			}
-			image = Toolkit.getDefaultToolkit().createImage(memoryImageSource);
-			imageRegion.setImage(image);
-		}
+//		synchronized void selectChannelsOrig() {
+//
+//			if (channelFactor[0] == 1 && channelFactor[1] == 1 && channelFactor[2] == 1)
+//				return;
+//			
+//			int[] vec = new int[3];
+//			int[] rgb = new int[3];
+//
+//
+//			for (int i=0; i<pixels.length; i++){
+//				int c = pixels[i];
+//
+//				if ( (c & OPAQUE) == OPAQUE) {
+//
+//					convertColor(c,vec);
+//
+//					convertColorBack(vec,rgb);
+//
+//					int r = rgb[0];
+//					int g = rgb[1];
+//					int b = rgb[2];
+//					r = (r>255) ? 255 : ((r < 0) ? 0 : r); 
+//					g = (g>255) ? 255 : ((g < 0) ? 0 : g); 
+//					b = (b>255) ? 255 : ((b < 0) ? 0 : b); 
+//
+//					c = (0xFF<<24) | (r <<16) | (g<<8) | b;
+//
+//					pixels[i] = c;
+//				}
+//			}
+//			image = Toolkit.getDefaultToolkit().createImage(memoryImageSource);
+//			imageRegion.setImage(image);
+//		}
 
 		public void changeColorHSB() {
 			pause = true;
@@ -4606,6 +4669,11 @@ public final class Color_Inspector_3D implements PlugIn {
 				s += "  YCbCr(" + Misc.fm(3,v[2]) +"," + Misc.fm(4,v[0]) +"," + Misc.fm(4,v[1]) +")";
 				r = v[0] + 128; g = v[1] + 128; b = v[2];
 				break;
+			case YCGCO:  
+				rgb2ycgco(r, g, b, v); 
+				s += "  YCgCo(" + Misc.fm(3,v[2]) +"," + Misc.fm(4,v[0]) +"," + Misc.fm(4,v[1]) +")";
+				r = v[0] + 128; g = v[1] + 128; b = v[2];
+				break;
 			case HSB: 
 				rgb2hsb_(r, g, b, v); 
 				s += "  HSB(" + Misc.fm(3,v[0]) +degreeSymbol+"," + Misc.fm(3,v[1]) +"%," + Misc.fm(3,v[2]) +"%)";
@@ -4852,7 +4920,7 @@ public final class Color_Inspector_3D implements PlugIn {
 				corner = null;
 			}
 			//-----------------------------------------------------------------	
-			else if (colorSpace == YCBCR || colorSpace == YUV || colorSpace == YIQ){
+			else if (colorSpace == YCBCR || colorSpace == YCGCO ||colorSpace == YUV || colorSpace == YIQ){
 				// Wuerfellinien eintragen
 				int[] yuv_i = new int[3];
 				int[] yuv_j = new int[3];
@@ -4863,6 +4931,10 @@ public final class Color_Inspector_3D implements PlugIn {
 							if (colorSpace == YCBCR) {
 								rgb2ycbcr(cubeCornersRGB[i], yuv_i);
 								rgb2ycbcr(cubeCornersRGB[j], yuv_j);
+							}
+							else if (colorSpace == YCGCO){
+								rgb2ycgco(cubeCornersRGB[i], yuv_i);
+								rgb2ycgco(cubeCornersRGB[j], yuv_j);
 							}
 							else if (colorSpace == YUV){
 								rgb2yuv(cubeCornersRGB[i], yuv_i);
