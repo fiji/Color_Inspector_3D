@@ -77,6 +77,7 @@
  * 
  */
 import ij.IJ;
+import ij.ImageJ;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.NewImage;
@@ -115,6 +116,10 @@ import java.awt.image.PixelGrabber;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -143,7 +148,7 @@ import javax.swing.event.ChangeListener;
 
 public final class Color_Inspector_3D implements PlugIn {
 
-	private final static String version = "v2.4"; 
+	private final static String version = "v2.5"; 
 	public static final char degreeSymbol = (char)176;
 
 	final static int RGB = 0;
@@ -260,18 +265,18 @@ public final class Color_Inspector_3D implements PlugIn {
 
 	public static void main(String args[]) {
 
-		//new ImageJ(); // open the ImageJ window to see images and results
+		new ImageJ(); // open the ImageJ window to see images and results
 
 		Color_Inspector_3D ci3D = new Color_Inspector_3D();
 		if (args.length<1)
-			ci3D.process("images/titel.jpg");
+			ci3D.process("/images/titel.jpg");
 		else 
 			ci3D.process(args[0]);
 	}
 
 	void process(String path) {
 		if (IJ.versionLessThan("1.33b")) return;
-		IJ.run("Open...", "path='"+path+"'");
+		//IJ.run("Open...", "path='"+path+"'");
 		//IJ.run("Open...", "path=/Users/barthel/Applications/ImageJ/plugins/ColorInspector3D/images/cube6.png");
 
 		run("");
@@ -549,7 +554,6 @@ public final class Color_Inspector_3D implements PlugIn {
 						if (string.equals(stringComic))      	str = "/images/lilo.jpg";
 						if (string.equals(stringStart))   		str = "/images/titel.jpg";
 						if (string.equals(stringphoto))         str = "/images/baboon400.jpg";
-						//if (string.equals(stringphoto))         str = "/images/mountains.jpg";
 						if (string.equals(stringCG)) 			str = "/images/pool.jpg";
 						if (string.equals(stringPalette))   	str = "/images/sail.gif";
 						if (string.equals(stringWebColors))   	str = "/images/webcolors.gif";
@@ -4751,42 +4755,38 @@ public final class Color_Inspector_3D implements PlugIn {
 				for (int i = 0; i < colHash.length; i++) {
 					if (colHash[i] != null) {
 						int c = colHash[i].color;
+				
 						int frequency = getFrequency(c);
-
-						double percent; 
+						double percent = 0; 
 						if (frequency >= 0) { 
 							percent = 100.* frequency / maskSize;
 							if (percent < 0.001)
 								percent = 0;
 						}
-						else {
-							percent = 0;
-							frequency = 0;
+						
+						String str = showColorDot(c);
+						
+						Pattern p = Pattern.compile("-?\\d+");
+						Matcher m = p.matcher(str);
+						List<String> allMatches = new ArrayList<String>();
+						while (m.find()) {
+							allMatches.add(m.group());
 						}
-						int r = ((c >> 16)& 0xff);
-						int g = ((c >> 8 )& 0xff);
-						int b = ( c       & 0xff);
-
+						int offset = (allMatches.size() > 6) ? 3 : 0;
+						
 						rt.incrementCounter();
-						if (english) {
-							rt.addValue("Red   ", r);
-							rt.addValue("Green ", g);
-							rt.addValue("Blue  ", b);
+						rt.addValue(stringColorSpaceLetters[colorSpace][0], allMatches.get(offset));
+						rt.addValue(stringColorSpaceLetters[colorSpace][1], allMatches.get(offset+1));
+						rt.addValue(stringColorSpaceLetters[colorSpace][2], allMatches.get(offset+2));
+						if (english) 
 							rt.addValue("Frequency", frequency);
-							rt.addValue("%", percent);
-						}
-						else {
-							rt.addValue("Rot   ", r);
-							rt.addValue("Gr\u00FCn ", g);
-							rt.addValue("Blau  ", b);
+						else
 							rt.addValue("Anzahl", frequency);
-							rt.addValue("%", percent);
-						}
+						rt.addValue("%", percent);
 					}
 				}
 				rt.show("LUT"); 
 			}	
-
 		}
 
 
